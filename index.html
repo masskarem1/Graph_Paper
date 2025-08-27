@@ -1,654 +1,743 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graph Paper Generator</title>
+    <title>Professional Graph Paper Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #2c3e50;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: #333;
         }
         
         .container {
             max-width: 1200px;
-            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin: 20px 0;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-        }
-        
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 1.2rem;
+        .panel h2 {
+            color: #4a5568;
             margin-bottom: 20px;
-        }
-        
-        .controls-panel {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .control-group {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-        }
-        
-        .control-group h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3498db;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
+            font-size: 1.5rem;
             font-weight: 500;
         }
         
-        select, input {
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        
+        .form-group select,
+        .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .color-input {
+            height: 45px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
             font-size: 16px;
-            background: white;
+            font-weight: 500;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-bottom: 10px;
         }
         
-        input[type="number"] {
-            -moz-appearance: textfield;
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
         
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button.secondary {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+        }
+        
+        .button.secondary:hover {
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
         }
         
         .preview-container {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0;
-        }
-        
-        .preview {
-            width: 400px;
-            height: 560px;
-            background-color: white;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e0e0e0;
-        }
-        
-        .graph-area {
-            position: absolute;
-            width: 330px;  /* 15cm in px for preview */
-            height: 462px; /* 21cm in px for preview */
-            left: 44px;    /* 2cm in px for preview */
-            bottom: 44px;  /* 2cm in px for preview */
-        }
-        
-        .grid-line {
-            position: absolute;
-            background-color: rgba(0, 102, 204, 0.3);
-        }
-        
-        .horizontal {
-            width: 100%;
-            height: 1px;
-            left: 0;
-        }
-        
-        .vertical {
-            width: 1px;
-            height: 100%;
-            top: 0;
-        }
-        
-        .line-medium {
-            background-color: rgba(0, 102, 204, 0.5);
-        }
-        
-        .line-bold {
-            background-color: rgba(0, 102, 204, 0.7);
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-        }
-        
-        button:hover {
-            background: #2980b9;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.6);
-        }
-        
-        .instructions {
-            background: #f8f9fa;
+            background: #f7fafc;
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
         }
         
-        .instructions h2 {
-            color: #2c3e50;
+        #preview {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .info-panel {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-panel h3 {
+            color: #2d3748;
             margin-bottom: 15px;
         }
         
-        .instructions ol {
-            margin-left: 20px;
-            line-height: 1.6;
+        .info-panel ul {
+            list-style-type: none;
+            padding-left: 0;
         }
         
-        .instructions li {
-            margin-bottom: 10px;
+        .info-panel li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
         }
         
-        footer {
+        .info-panel li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #38a169;
+            font-weight: bold;
+        }
+        
+        .quick-presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .preset-btn {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
             text-align: center;
-            margin-top: 30px;
-            color: #7f8c8d;
-            font-size: 0.9rem;
+            font-size: 14px;
+            transition: all 0.2s ease;
         }
         
-        @media (max-width: 768px) {
-            .controls-panel {
-                grid-template-columns: 1fr;
-            }
-            
-            .preview {
-                width: 300px;
-                height: 420px;
-            }
-            
-            .graph-area {
-                width: 247px;
-                height: 346px;
-                left: 33px;
-                bottom: 33px;
-            }
+        .preset-btn:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+        }
+        
+        .preset-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .status-message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status-message.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Graph Paper Generator</h1>
-            <p class="subtitle">Customizable grid paper with multiple format options</p>
-        </header>
-
-        <div class="controls-panel">
-            <div class="control-group">
-                <h3>Paper Settings</h3>
+        <div class="header">
+            <h1>Professional Graph Paper Generator</h1>
+            <p>Create high-quality, printable graph paper in various formats with precise customization</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="panel">
+                <h2>Configuration</h2>
+                
+                <div class="form-group">
+                    <label>Quick Presets</label>
+                    <div class="quick-presets">
+                        <div class="preset-btn active" onclick="loadPreset('jis-b5')">JIS B5 Standard</div>
+                        <div class="preset-btn" onclick="loadPreset('a4-standard')">A4 Standard</div>
+                        <div class="preset-btn" onclick="loadPreset('letter-standard')">US Letter</div>
+                        <div class="preset-btn" onclick="loadPreset('engineering')">Engineering</div>
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label for="paperSize">Paper Size</label>
-                    <select id="paperSize">
-                        <option value="jis-b5">JIS B5 (182 × 257 mm)</option>
-                        <option value="iso-b5">ISO B5 (176 × 250 mm)</option>
-                        <option value="a4">A4 (210 × 297 mm)</option>
-                        <option value="a5">A5 (148 × 210 mm)</option>
-                        <option value="letter">US Letter (216 × 279 mm)</option>
-                        <option value="legal">US Legal (216 × 356 mm)</option>
+                    <select id="paperSize" onchange="updatePaperSize()">
+                        <option value="jis-b5">JIS B5 (182×257mm)</option>
+                        <option value="iso-b5">ISO B5 (176×250mm)</option>
+                        <option value="a4">A4 (210×297mm)</option>
+                        <option value="a5">A5 (148×210mm)</option>
+                        <option value="letter">US Letter (8.5×11")</option>
+                        <option value="legal">US Legal (8.5×14")</option>
                         <option value="custom">Custom Size</option>
                     </select>
                 </div>
                 
-                <div id="customSizeGroup" style="display: none;">
+                <div class="form-row" id="customSizeInputs" style="display: none;">
                     <div class="form-group">
-                        <label for="customWidth">Custom Width (mm)</label>
-                        <input type="number" id="customWidth" min="50" max="500" value="182">
+                        <label for="customWidth">Width (mm)</label>
+                        <input type="number" id="customWidth" value="182" min="50" max="500">
                     </div>
                     <div class="form-group">
-                        <label for="customHeight">Custom Height (mm)</label>
-                        <input type="number" id="customHeight" min="50" max="500" value="257">
+                        <label for="customHeight">Height (mm)</label>
+                        <input type="number" id="customHeight" value="257" min="50" max="700">
                     </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gridWidth">Grid Width (cm)</label>
+                        <input type="number" id="gridWidth" value="15" min="1" max="50" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="gridHeight">Grid Height (cm)</label>
+                        <input type="number" id="gridHeight" value="21" min="1" max="50" step="0.1">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="marginLeft">Left Margin (cm)</label>
+                        <input type="number" id="marginLeft" value="2" min="0" max="10" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="marginBottom">Bottom Margin (cm)</label>
+                        <input type="number" id="marginBottom" value="2" min="0" max="10" step="0.1">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gridSpacing">Grid Spacing</label>
+                    <select id="gridSpacing">
+                        <option value="1">1mm</option>
+                        <option value="2">2mm</option>
+                        <option value="5">5mm</option>
+                        <option value="10">10mm</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gridColor">Grid Color</label>
+                    <input type="color" id="gridColor" value="#0066cc" class="color-input">
                 </div>
                 
                 <div class="form-group">
                     <label for="outputFormat">Output Format</label>
                     <select id="outputFormat">
                         <option value="pdf">PDF (Vector)</option>
-                        <option value="png">PNG (Raster)</option>
+                        <option value="png">PNG (300 DPI)</option>
                     </select>
                 </div>
+                
+                <button class="button" onclick="updatePreview()">Update Preview</button>
+                <button class="button secondary" onclick="generateOutput()">Generate Graph Paper</button>
+                <div id="statusMessage"></div>
             </div>
             
-            <div class="control-group">
-                <h3>Grid Settings</h3>
-                <div class="form-group">
-                    <label for="gridWidth">Grid Width (cm)</label>
-                    <input type="number" id="gridWidth" min="5" max="50" value="15">
+            <div class="panel">
+                <h2>Preview</h2>
+                <div class="preview-container">
+                    <canvas id="preview" width="300" height="400"></canvas>
                 </div>
                 
-                <div class="form-group">
-                    <label for="gridHeight">Grid Height (cm)</label>
-                    <input type="number" id="gridHeight" min="5" max="50" value="21">
-                </div>
-                
-                <div class="form-group">
-                    <label for="gridSpacing">Grid Spacing (mm)</label>
-                    <select id="gridSpacing">
-                        <option value="1">1 mm</option>
-                        <option value="2">2 mm</option>
-                        <option value="5">5 mm</option>
-                        <option value="10">10 mm</option>
-                    </select>
+                <div class="info-panel">
+                    <h3>Features</h3>
+                    <ul>
+                        <li>High-resolution vector output (PDF) or 300 DPI raster (PNG)</li>
+                        <li>Precise measurements and positioning</li>
+                        <li>Variable line weights (1mm, 5mm, 10mm intervals)</li>
+                        <li>Professional graph paper blue color</li>
+                        <li>Print-ready format with accurate dimensions</li>
+                        <li>Multiple paper size options</li>
+                        <li>Customizable grid spacing and colors</li>
+                        <li>Mobile-responsive interface</li>
+                    </ul>
                 </div>
             </div>
-            
-            <div class="control-group">
-                <h3>Margin Settings</h3>
-                <div class="form-group">
-                    <label for="leftMargin">Left Margin (cm)</label>
-                    <input type="number" id="leftMargin" min="0" max="10" step="0.5" value="2">
-                </div>
-                
-                <div class="form-group">
-                    <label for="bottomMargin">Bottom Margin (cm)</label>
-                    <input type="number" id="bottomMargin" min="0" max="10" step="0.5" value="2">
-                </div>
-                
-                <div class="form-group">
-                    <label for="lineColor">Grid Color</label>
-                    <input type="color" id="lineColor" value="#0066cc">
-                </div>
-            </div>
-        </div>
-
-        <div class="preview-container">
-            <div class="preview">
-                <div class="graph-area" id="graphArea"></div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button id="generateBtn">Generate Graph Paper</button>
-            <button id="updatePreviewBtn">Update Preview</button>
-        </div>
-
-        <div class="instructions">
-            <h2>Instructions</h2>
-            <ol>
-                <li>Select your preferred paper size or specify a custom size</li>
-                <li>Adjust the grid dimensions and spacing as needed</li>
-                <li>Set the left and bottom margins for positioning the grid</li>
-                <li>Choose between PDF (vector) or PNG (raster) output format</li>
-                <li>Click "Update Preview" to see changes</li>
-                <li>Click "Generate Graph Paper" to create your file</li>
-            </ol>
         </div>
     </div>
 
-    <footer>
-        <p>Created with HTML, CSS, JavaScript, and jsPDF | High-resolution output</p>
-    </footer>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the preview
-            updatePreview();
-            
-            // Set up event listeners
-            document.getElementById('updatePreviewBtn').addEventListener('click', updatePreview);
-            document.getElementById('generateBtn').addEventListener('click', generateOutput);
-            document.getElementById('paperSize').addEventListener('change', toggleCustomSize);
-            
-            // Add input event listeners for custom size fields
-            document.getElementById('customWidth').addEventListener('input', updatePreview);
-            document.getElementById('customHeight').add('input', updatePreview);
-            
-            // Add input event listeners for grid and margin settings
-            document.getElementById('gridWidth').addEventListener('input', updatePreview);
-            document.getElementById('gridHeight').addEventListener('input', updatePreview);
-            document.getElementById('leftMargin').addEventListener('input', updatePreview);
-            document.getElementById('bottomMargin').addEventListener('input', updatePreview);
-            document.getElementById('lineColor').addEventListener('input', updatePreview);
-            document.getElementById('gridSpacing').addEventListener('change', updatePreview);
-        });
-
-        function toggleCustomSize() {
-            const paperSize = document.getElementById('paperSize').value;
-            const customSizeGroup = document.getElementById('customSizeGroup');
-            
-            if (paperSize === 'custom') {
-                customSizeGroup.style.display = 'block';
-            } else {
-                customSizeGroup.style.display = 'none';
+        // Global variables
+        let currentPreset = 'jis-b5';
+        
+        // Paper size definitions (in mm)
+        const paperSizes = {
+            'jis-b5': { width: 182, height: 257, name: 'JIS B5' },
+            'iso-b5': { width: 176, height: 250, name: 'ISO B5' },
+            'a4': { width: 210, height: 297, name: 'A4' },
+            'a5': { width: 148, height: 210, name: 'A5' },
+            'letter': { width: 215.9, height: 279.4, name: 'US Letter' },
+            'legal': { width: 215.9, height: 355.6, name: 'US Legal' }
+        };
+        
+        // Preset configurations
+        const presets = {
+            'jis-b5': {
+                paperSize: 'jis-b5',
+                gridWidth: 15,
+                gridHeight: 21,
+                marginLeft: 2,
+                marginBottom: 2,
+                gridSpacing: 1,
+                gridColor: '#0066cc'
+            },
+            'a4-standard': {
+                paperSize: 'a4',
+                gridWidth: 18,
+                gridHeight: 25,
+                marginLeft: 2,
+                marginBottom: 2,
+                gridSpacing: 1,
+                gridColor: '#0066cc'
+            },
+            'letter-standard': {
+                paperSize: 'letter',
+                gridWidth: 18,
+                gridHeight: 23,
+                marginLeft: 2,
+                marginBottom: 2,
+                gridSpacing: 1,
+                gridColor: '#0066cc'
+            },
+            'engineering': {
+                paperSize: 'a4',
+                gridWidth: 18,
+                gridHeight: 25,
+                marginLeft: 2,
+                marginBottom: 2,
+                gridSpacing: 2,
+                gridColor: '#006600'
             }
-            
+        };
+        
+        // Initialize the application
+        function init() {
+            loadPreset('jis-b5');
             updatePreview();
         }
-
+        
+        // Load a preset configuration
+        function loadPreset(presetName) {
+            currentPreset = presetName;
+            const preset = presets[presetName];
+            
+            document.getElementById('paperSize').value = preset.paperSize;
+            document.getElementById('gridWidth').value = preset.gridWidth;
+            document.getElementById('gridHeight').value = preset.gridHeight;
+            document.getElementById('marginLeft').value = preset.marginLeft;
+            document.getElementById('marginBottom').value = preset.marginBottom;
+            document.getElementById('gridSpacing').value = preset.gridSpacing;
+            document.getElementById('gridColor').value = preset.gridColor;
+            
+            // Update preset button states
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[onclick="loadPreset('${presetName}')"]`).classList.add('active');
+            
+            updatePaperSize();
+            updatePreview();
+        }
+        
+        // Update paper size inputs
+        function updatePaperSize() {
+            const paperSize = document.getElementById('paperSize').value;
+            const customInputs = document.getElementById('customSizeInputs');
+            
+            if (paperSize === 'custom') {
+                customInputs.style.display = 'grid';
+            } else {
+                customInputs.style.display = 'none';
+                const size = paperSizes[paperSize];
+                document.getElementById('customWidth').value = size.width;
+                document.getElementById('customHeight').value = size.height;
+            }
+        }
+        
+        // Get current paper dimensions
         function getPaperDimensions() {
             const paperSize = document.getElementById('paperSize').value;
             
-            switch(paperSize) {
-                case 'jis-b5': return { width: 182, height: 257 };
-                case 'iso-b5': return { width: 176, height: 250 };
-                case 'a4': return { width: 210, height: 297 };
-                case 'a5': return { width: 148, height: 210 };
-                case 'letter': return { width: 216, height: 279 };
-                case 'legal': return { width: 216, height: 356 };
-                case 'custom': 
-                    return { 
-                        width: parseFloat(document.getElementById('customWidth').value), 
-                        height: parseFloat(document.getElementById('customHeight').value) 
-                    };
-                default: return { width: 182, height: 257 };
-            }
-        }
-
-        function updatePreview() {
-            const graphArea = document.getElementById('graphArea');
-            graphArea.innerHTML = '';
-            
-            // Get settings
-            const gridWidth = parseFloat(document.getElementById('gridWidth').value) * 10; // Convert cm to mm
-            const gridHeight = parseFloat(document.getElementById('gridHeight').value) * 10; // Convert cm to mm
-            const leftMargin = parseFloat(document.getElementById('leftMargin').value) * 10; // Convert cm to mm
-            const bottomMargin = parseFloat(document.getElementById('bottomMargin').value) * 10; // Convert cm to mm
-            const gridSpacing = parseInt(document.getElementById('gridSpacing').value);
-            const lineColor = document.getElementById('lineColor').value;
-            
-            // Get paper dimensions
-            const paper = getPaperDimensions();
-            
-            // Calculate scaling factors for preview (simplified for demo)
-            const scaleX = 330 / gridWidth;  // preview width / grid width
-            const scaleY = 462 / gridHeight; // preview height / grid height
-            const scale = Math.min(scaleX, scaleY);
-            
-            // Calculate preview dimensions
-            const previewWidth = gridWidth * scale;
-            const previewHeight = gridHeight * scale;
-            const previewLeft = 44; // Fixed for demo
-            const previewBottom = 44; // Fixed for demo
-            
-            // Apply styles to graph area
-            graphArea.style.width = previewWidth + 'px';
-            graphArea.style.height = previewHeight + 'px';
-            graphArea.style.left = previewLeft + 'px';
-            graphArea.style.bottom = previewBottom + 'px';
-            
-            // Calculate number of lines needed
-            const horizontalLines = Math.floor(gridHeight / gridSpacing);
-            const verticalLines = Math.floor(gridWidth / gridSpacing);
-            
-            // Create horizontal lines
-            for (let i = 0; i <= horizontalLines; i++) {
-                const line = document.createElement('div');
-                line.className = 'grid-line horizontal';
-                line.style.top = (i * gridSpacing * scale) + 'px';
-                
-                // Apply different line weights
-                if (i % 10 === 0) {
-                    line.classList.add('line-bold');
-                } else if (i % 5 === 0) {
-                    line.classList.add('line-medium');
-                }
-                
-                // Apply color
-                line.style.backgroundColor = lineColor;
-                
-                graphArea.appendChild(line);
-            }
-            
-            // Create vertical lines
-            for (let i = 0; i <= verticalLines; i++) {
-                const line = document.createElement('div');
-                line.className = 'grid-line vertical';
-                line.style.left = (i * gridSpacing * scale) + 'px';
-                
-                // Apply different line weights
-                if (i % 10 === 0) {
-                    line.classList.add('line-bold');
-                } else if (i % 5 === 0) {
-                    line.classList.add('line-medium');
-                }
-                
-                // Apply color
-                line.style.backgroundColor = lineColor;
-                
-                graphArea.appendChild(line);
-            }
-        }
-
-        function generateOutput() {
-            const outputFormat = document.getElementById('outputFormat').value;
-            
-            if (outputFormat === 'pdf') {
-                generatePDF();
+            if (paperSize === 'custom') {
+                return {
+                    width: parseFloat(document.getElementById('customWidth').value),
+                    height: parseFloat(document.getElementById('customHeight').value)
+                };
             } else {
-                generatePNG();
+                return paperSizes[paperSize];
             }
         }
-
+        
+        // Update the canvas preview
+        function updatePreview() {
+            const canvas = document.getElementById('preview');
+            const ctx = canvas.getContext('2d');
+            
+            // Get current settings
+            const paperDim = getPaperDimensions();
+            const gridWidth = parseFloat(document.getElementById('gridWidth').value) * 10; // Convert cm to mm
+            const gridHeight = parseFloat(document.getElementById('gridHeight').value) * 10;
+            const marginLeft = parseFloat(document.getElementById('marginLeft').value) * 10;
+            const marginBottom = parseFloat(document.getElementById('marginBottom').value) * 10;
+            const gridSpacing = parseInt(document.getElementById('gridSpacing').value);
+            const gridColor = document.getElementById('gridColor').value;
+            
+            // Calculate scale to fit canvas
+            const scale = Math.min(canvas.width / paperDim.width, canvas.height / paperDim.height) * 0.9;
+            
+            // Clear canvas
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Center the paper on canvas
+            const offsetX = (canvas.width - paperDim.width * scale) / 2;
+            const offsetY = (canvas.height - paperDim.height * scale) / 2;
+            
+            // Draw paper outline
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(offsetX, offsetY, paperDim.width * scale, paperDim.height * scale);
+            
+            // Draw grid
+            ctx.strokeStyle = gridColor;
+            
+            const gridStartX = marginLeft * scale + offsetX;
+            const gridStartY = (paperDim.height - marginBottom - gridHeight) * scale + offsetY;
+            const gridEndX = gridStartX + gridWidth * scale;
+            const gridEndY = gridStartY + gridHeight * scale;
+            
+            // Vertical lines
+            for (let x = 0; x <= gridWidth; x += gridSpacing) {
+                const lineX = gridStartX + x * scale;
+                
+                // Determine line weight
+                if (x % 10 === 0) {
+                    ctx.lineWidth = 0.8; // Bold line every 10mm
+                } else if (x % 5 === 0) {
+                    ctx.lineWidth = 0.5; // Medium line every 5mm
+                } else {
+                    ctx.lineWidth = 0.2; // Light line every 1mm
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(lineX, gridStartY);
+                ctx.lineTo(lineX, gridEndY);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let y = 0; y <= gridHeight; y += gridSpacing) {
+                const lineY = gridStartY + y * scale;
+                
+                // Determine line weight
+                if (y % 10 === 0) {
+                    ctx.lineWidth = 0.8; // Bold line every 10mm
+                } else if (y % 5 === 0) {
+                    ctx.lineWidth = 0.5; // Medium line every 5mm
+                } else {
+                    ctx.lineWidth = 0.2; // Light line every 1mm
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(gridStartX, lineY);
+                ctx.lineTo(gridEndX, lineY);
+                ctx.stroke();
+            }
+        }
+        
+        // Generate output file
+        function generateOutput() {
+            const format = document.getElementById('outputFormat').value;
+            const statusDiv = document.getElementById('statusMessage');
+            
+            try {
+                if (format === 'pdf') {
+                    generatePDF();
+                } else {
+                    generatePNG();
+                }
+                
+                statusDiv.innerHTML = '<div class="status-message success">File generated successfully!</div>';
+            } catch (error) {
+                console.error('Generation error:', error);
+                statusDiv.innerHTML = '<div class="status-message error">Error generating file. Please try again.</div>';
+            }
+        }
+        
+        // Generate PDF using jsPDF
         function generatePDF() {
-            // Create a new jsPDF instance
             const { jsPDF } = window.jspdf;
             
-            // Get paper dimensions
-            const paper = getPaperDimensions();
-            const doc = new jsPDF({
-                orientation: paper.width > paper.height ? 'landscape' : 'portrait',
-                unit: 'mm',
-                format: [paper.width, paper.height]
-            });
-
-            // Get settings
-            const gridWidth = parseFloat(document.getElementById('gridWidth').value) * 10; // Convert cm to mm
-            const gridHeight = parseFloat(document.getElementById('gridHeight').value) * 10; // Convert cm to mm
-            const leftMargin = parseFloat(document.getElementById('leftMargin').value) * 10; // Convert cm to mm
-            const bottomMargin = parseFloat(document.getElementById('bottomMargin').value) * 10; // Convert cm to mm
+            // Get current settings
+            const paperDim = getPaperDimensions();
+            const gridWidth = parseFloat(document.getElementById('gridWidth').value) * 10;
+            const gridHeight = parseFloat(document.getElementById('gridHeight').value) * 10;
+            const marginLeft = parseFloat(document.getElementById('marginLeft').value) * 10;
+            const marginBottom = parseFloat(document.getElementById('marginBottom').value) * 10;
             const gridSpacing = parseInt(document.getElementById('gridSpacing').value);
-            const lineColor = document.getElementById('lineColor').value;
+            const gridColor = document.getElementById('gridColor').value;
             
-            // Parse color
-            const rgb = hexToRgb(lineColor);
+            // Create PDF with custom dimensions
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: [paperDim.width, paperDim.height]
+            });
             
-            // Calculate graph position
-            const graphTop = paper.height - bottomMargin - gridHeight;
+            // Convert hex color to RGB
+            const hexToRgb = (hex) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            };
             
-            // Draw the graph grid
-            doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+            const color = hexToRgb(gridColor);
+            doc.setDrawColor(color.r, color.g, color.b);
             
-            // Draw horizontal lines
-            for (let y = 0; y <= gridHeight; y += gridSpacing) {
-                if (y % (gridSpacing * 10) === 0) {
-                    doc.setLineWidth(0.25); // Stronger bold line every 10 units
-                } else if (y % (gridSpacing * 5) === 0) {
-                    doc.setLineWidth(0.15); // Medium bold line every 5 units
-                } else {
-                    doc.setLineWidth(0.05); // Light line every unit
-                }
-                
-                doc.line(
-                    leftMargin, 
-                    graphTop + y, 
-                    leftMargin + gridWidth, 
-                    graphTop + y
-                );
-            }
+            const gridStartX = marginLeft;
+            const gridStartY = paperDim.height - marginBottom - gridHeight;
             
             // Draw vertical lines
             for (let x = 0; x <= gridWidth; x += gridSpacing) {
-                if (x % (gridSpacing * 10) === 0) {
-                    doc.setLineWidth(0.25); // Stronger bold line every 10 units
-                } else if (x % (gridSpacing * 5) === 0) {
-                    doc.setLineWidth(0.15); // Medium bold line every 5 units
+                const lineX = gridStartX + x;
+                
+                // Set line weight based on interval
+                if (x % 10 === 0) {
+                    doc.setLineWidth(0.2); // Bold line every 10mm
+                } else if (x % 5 === 0) {
+                    doc.setLineWidth(0.1); // Medium line every 5mm
                 } else {
-                    doc.setLineWidth(0.05); // Light line every unit
+                    doc.setLineWidth(0.05); // Light line every 1mm
                 }
                 
-                doc.line(
-                    leftMargin + x, 
-                    graphTop, 
-                    leftMargin + x, 
-                    graphTop + gridHeight
-                );
+                doc.line(lineX, gridStartY, lineX, gridStartY + gridHeight);
             }
             
-            // Save the PDF
-            doc.save('graph-paper.pdf');
+            // Draw horizontal lines
+            for (let y = 0; y <= gridHeight; y += gridSpacing) {
+                const lineY = gridStartY + y;
+                
+                // Set line weight based on interval
+                if (y % 10 === 0) {
+                    doc.setLineWidth(0.2); // Bold line every 10mm
+                } else if (y % 5 === 0) {
+                    doc.setLineWidth(0.1); // Medium line every 5mm
+                } else {
+                    doc.setLineWidth(0.05); // Light line every 1mm
+                }
+                
+                doc.line(gridStartX, lineY, gridStartX + gridWidth, lineY);
+            }
             
-            // Update button text temporarily
-            const btn = document.getElementById('generateBtn');
-            btn.textContent = 'PDF Generated!';
-            setTimeout(() => {
-                btn.textContent = 'Generate Graph Paper';
-            }, 2000);
+            // Save PDF
+            const paperSizeName = paperSizes[document.getElementById('paperSize').value]?.name || 'Custom';
+            doc.save(`graph-paper-${paperSizeName.replace(/\s+/g, '-').toLowerCase()}-${gridSpacing}mm.pdf`);
         }
-
+        
+        // Generate PNG
         function generatePNG() {
-            // Get settings
-            const gridWidth = parseFloat(document.getElementById('gridWidth').value) * 10; // Convert cm to mm
-            const gridHeight = parseFloat(document.getElementById('gridHeight').value) * 10; // Convert cm to mm
-            const leftMargin = parseFloat(document.getElementById('leftMargin').value) * 10; // Convert cm to mm
-            const bottomMargin = parseFloat(document.getElementById('bottomMargin').value) * 10; // Convert cm to mm
-            const gridSpacing = parseInt(document.getElementById('gridSpacing').value);
-            const lineColor = document.getElementById('lineColor').value;
-            
-            // Get paper dimensions
-            const paper = getPaperDimensions();
-            
-            // Create a canvas element
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Set canvas dimensions (at 300 DPI)
+            // Get current settings
+            const paperDim = getPaperDimensions();
+            const gridWidth = parseFloat(document.getElementById('gridWidth').value) * 10;
+            const gridHeight = parseFloat(document.getElementById('gridHeight').value) * 10;
+            const marginLeft = parseFloat(document.getElementById('marginLeft').value) * 10;
+            const marginBottom = parseFloat(document.getElementById('marginBottom').value) * 10;
+            const gridSpacing = parseInt(document.getElementById('gridSpacing').value);
+            const gridColor = document.getElementById('gridColor').value;
+            
+            // Set canvas size for 300 DPI
             const dpi = 300;
-            const widthInches = paper.width / 25.4;
-            const heightInches = paper.height / 25.4;
-            canvas.width = widthInches * dpi;
-            canvas.height = heightInches * dpi;
+            const mmToPixels = dpi / 25.4;
+            canvas.width = paperDim.width * mmToPixels;
+            canvas.height = paperDim.height * mmToPixels;
             
-            // Scale context for drawing
-            const scale = dpi / 25.4; // mm to pixels
-            ctx.scale(scale, scale);
-            
-            // Draw white background
+            // Set white background
             ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, paper.width, paper.height);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Parse color
-            const rgb = hexToRgb(lineColor);
-            const colorStr = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+            // Set grid color
+            ctx.strokeStyle = gridColor;
             
-            // Calculate graph position
-            const graphTop = paper.height - bottomMargin - gridHeight;
-            
-            // Draw horizontal lines
-            for (let y = 0; y <= gridHeight; y += gridSpacing) {
-                if (y % (gridSpacing * 10) === 0) {
-                    ctx.lineWidth = 0.5; // Stronger bold line every 10 units
-                } else if (y % (gridSpacing * 5) === 0) {
-                    ctx.lineWidth = 0.3; // Medium bold line every 5 units
-                } else {
-                    ctx.lineWidth = 0.1; // Light line every unit
-                }
-                
-                ctx.beginPath();
-                ctx.strokeStyle = colorStr;
-                ctx.moveTo(leftMargin, graphTop + y);
-                ctx.lineTo(leftMargin + gridWidth, graphTop + y);
-                ctx.stroke();
-            }
+            const gridStartX = marginLeft * mmToPixels;
+            const gridStartY = (paperDim.height - marginBottom - gridHeight) * mmToPixels;
             
             // Draw vertical lines
             for (let x = 0; x <= gridWidth; x += gridSpacing) {
-                if (x % (gridSpacing * 10) === 0) {
-                    ctx.lineWidth = 0.5; // Stronger bold line every 10 units
-                } else if (x % (gridSpacing * 5) === 0) {
-                    ctx.lineWidth = 0.3; // Medium bold line every 5 units
+                const lineX = gridStartX + x * mmToPixels;
+                
+                // Set line weight
+                if (x % 10 === 0) {
+                    ctx.lineWidth = 2; // Bold line every 10mm
+                } else if (x % 5 === 0) {
+                    ctx.lineWidth = 1; // Medium line every 5mm
                 } else {
-                    ctx.lineWidth = 0.1; // Light line every unit
+                    ctx.lineWidth = 0.5; // Light line every 1mm
                 }
                 
                 ctx.beginPath();
-                ctx.strokeStyle = colorStr;
-                ctx.moveTo(leftMargin + x, graphTop);
-                ctx.lineTo(leftMargin + x, graphTop + gridHeight);
+                ctx.moveTo(lineX, gridStartY);
+                ctx.lineTo(lineX, gridStartY + gridHeight * mmToPixels);
                 ctx.stroke();
             }
             
-            // Convert to PNG and download
-            const dataURL = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.download = 'graph-paper.png';
-            link.href = dataURL;
-            link.click();
+            // Draw horizontal lines
+            for (let y = 0; y <= gridHeight; y += gridSpacing) {
+                const lineY = gridStartY + y * mmToPixels;
+                
+                // Set line weight
+                if (y % 10 === 0) {
+                    ctx.lineWidth = 2; // Bold line every 10mm
+                } else if (y % 5 === 0) {
+                    ctx.lineWidth = 1; // Medium line every 5mm
+                } else {
+                    ctx.lineWidth = 0.5; // Light line every 1mm
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(gridStartX, lineY);
+                ctx.lineTo(gridStartX + gridWidth * mmToPixels, lineY);
+                ctx.stroke();
+            }
             
-            // Update button text temporarily
-            const btn = document.getElementById('generateBtn');
-            btn.textContent = 'PNG Generated!';
-            setTimeout(() => {
-                btn.textContent = 'Generate Graph Paper';
-            }, 2000);
+            // Download PNG
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `graph-paper-${gridSpacing}mm-300dpi.png`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+            });
         }
-
-        function hexToRgb(hex) {
-            // Remove the # if present
-            hex = hex.replace('#', '');
+        
+        // Add event listeners for real-time preview updates
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
             
-            // Parse the hex values
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
+            // Add input event listeners for real-time updates
+            const inputs = ['gridWidth', 'gridHeight', 'marginLeft', 'marginBottom', 'gridSpacing', 'gridColor'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', updatePreview);
+            });
             
-            return { r, g, b };
-        }
+            document.getElementById('paperSize').addEventListener('change', function() {
+                updatePaperSize();
+                updatePreview();
+            });
+            
+            const customInputs = ['customWidth', 'customHeight'];
+            customInputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', updatePreview);
+            });
+        });
     </script>
 </body>
 </html>
